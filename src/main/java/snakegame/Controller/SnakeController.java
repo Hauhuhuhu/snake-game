@@ -9,7 +9,7 @@ public class SnakeController implements ActionListener {
     private SnakeModel model;
     private SnakeView view;
     private Timer timer;
-    private boolean processingPause = false; // Cờ chống lặp sự kiện
+    private boolean processingPause = false;
 
     public SnakeController(SnakeModel model, SnakeView view) {
         this.model = model;
@@ -17,7 +17,7 @@ public class SnakeController implements ActionListener {
         this.timer = new Timer(400, this);
         setupButtonListeners();
         view.addKeyListener(new TAdapter());
-        view.requestFocusInWindow(); // Đảm bảo SnakeView có focus
+        view.requestFocusInWindow();
         timer.start();
     }
 
@@ -70,6 +70,7 @@ public class SnakeController implements ActionListener {
     public void handleNormalLevel() {
         timer.stop();
         timer = new Timer(400, this);
+        model.setCurrentLevel(SnakeModel.Level.NORMAL);
         view.hideMenuLevel();
         view.showMenu();
         view.revalidate();
@@ -79,6 +80,7 @@ public class SnakeController implements ActionListener {
     public void handleHardLevel() {
         timer.stop();
         timer = new Timer(100, this);
+        model.setCurrentLevel(SnakeModel.Level.HARD);
         view.hideMenuLevel();
         view.showMenu();
         view.revalidate();
@@ -88,6 +90,7 @@ public class SnakeController implements ActionListener {
     public void handleVeryHardLevel() {
         timer.stop();
         timer = new Timer(30, this);
+        model.setCurrentLevel(SnakeModel.Level.VERY_HARD);
         view.hideMenuLevel();
         view.showMenu();
         view.revalidate();
@@ -120,10 +123,10 @@ public class SnakeController implements ActionListener {
             model.move();
         } else if (!model.isInGame()) {
             timer.stop();
-            int bestScore = model.readBestScoreFromFile();
+            int bestScore = model.getBestScoreForLevel(model.getCurrentLevel());
             if (model.getPoint() > bestScore) {
+                model.writeBestScoreToFile(model.getCurrentLevel(), model.getPoint());
                 bestScore = model.getPoint();
-                model.writeBestScoreToFile(bestScore);
             }
             view.loadGameOver(model.getPoint(), bestScore);
             setupGameOverButtonListeners();
@@ -156,7 +159,6 @@ public class SnakeController implements ActionListener {
                                 }
                             }
                             view.repaint();
-                            // Đặt lại cờ sau 200ms
                             new Timer(200, evt -> {
                                 processingPause = false;
                                 ((Timer) evt.getSource()).stop();
@@ -164,7 +166,6 @@ public class SnakeController implements ActionListener {
                         }
                     } else {
                         boolean directionChanged = false;
-                        // Xử lý phím di chuyển bất kể trạng thái paused
                         if ((key == KeyEvent.VK_LEFT || key == KeyEvent.VK_A) && !model.isRightDirection()) {
                             model.setLeftDirection(true);
                             model.setDownDirection(false);
@@ -191,7 +192,6 @@ public class SnakeController implements ActionListener {
                         }
                         if (directionChanged) {
                             if (model.isPaused()) {
-                                // Tiếp tục trò chơi khi nhấn phím di chuyển
                                 if (!processingPause) {
                                     processingPause = true;
                                     model.setPaused(false);
@@ -199,14 +199,12 @@ public class SnakeController implements ActionListener {
                                         timer.start();
                                     }
                                     view.repaint();
-                                    // Đặt lại cờ sau 200ms
                                     new Timer(200, evt -> {
                                         processingPause = false;
                                         ((Timer) evt.getSource()).stop();
                                     }).start();
                                 }
                             } else if (!timer.isRunning()) {
-                                // Khởi động timer nếu chưa chạy
                                 timer.start();
                             }
                         }

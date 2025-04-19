@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import snakegame.Model.SnakeModel;
 
-
 public class SnakeView extends JPanel {
     private Image apple;
     private Image dot;
@@ -15,6 +14,7 @@ public class SnakeView extends JPanel {
     private JPanel menuLevel;
     private JLabel result;
     private JLabel resultMax;
+    private JLabel level; // Thêm biến instance để cập nhật nhãn mức độ
     private Color colorBackground = new Color(241, 247, 254);
     private SnakeModel model;
     private JButton playButton;
@@ -123,8 +123,13 @@ public class SnakeView extends JPanel {
             lb.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             menuOver.add(lb, BorderLayout.NORTH);
 
-            JPanel resultPanel = new JPanel(new GridLayout(2, 2));
+            JPanel resultPanel = new JPanel(new GridLayout(3, 2));
             resultPanel.setBackground(colorBackground);
+            JLabel levelLabel = new JLabel("Mức độ:", SwingConstants.CENTER);
+            levelLabel.setFont(new Font("Arial", Font.BOLD, 16));
+            level = new JLabel("", SwingConstants.CENTER); // Khởi tạo nhãn mức độ
+            level.setFont(new Font("Arial", Font.BOLD, 16));
+            level.setForeground(Color.BLUE);
             JLabel resultLabel = new JLabel("Kết quả:", SwingConstants.CENTER);
             resultLabel.setFont(new Font("Arial", Font.BOLD, 16));
             result = new JLabel();
@@ -137,6 +142,8 @@ public class SnakeView extends JPanel {
             resultMax.setHorizontalAlignment(SwingConstants.CENTER);
             resultMax.setFont(new Font("Arial", Font.BOLD, 16));
             resultMax.setForeground(Color.RED);
+            resultPanel.add(levelLabel);
+            resultPanel.add(level);
             resultPanel.add(resultLabel);
             resultPanel.add(result);
             resultPanel.add(resultMaxLabel);
@@ -154,6 +161,12 @@ public class SnakeView extends JPanel {
             menuOver.add(buttonPanel, BorderLayout.SOUTH);
             add(menuOver);
         }
+        // Cập nhật nhãn mức độ mỗi lần gọi
+        String levelText = model.getCurrentLevel() != null ? model.getCurrentLevel().toString() : "UNKNOWN";
+        if(levelText == "NORMAL") levelText = "Bình Thường";
+        if(levelText == "HARD") levelText = "Khó";
+        if(levelText == "VERY_HARD") levelText = "Rất Khó";
+        level.setText(levelText);
         result.setText(point + " điểm");
         resultMax.setText(bestScore + " điểm");
         menuOver.setVisible(true);
@@ -203,6 +216,7 @@ public class SnakeView extends JPanel {
     public void hideMenuLevel() {
         if (menuLevel != null) menuLevel.setVisible(false);
     }
+
     public void hideMenuOver() {
         if (menuOver != null) menuOver.setVisible(false);
     }

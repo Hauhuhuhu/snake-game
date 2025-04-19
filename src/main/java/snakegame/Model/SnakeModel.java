@@ -6,9 +6,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SnakeModel {
-    private static final String BEST_SCORE_FILE = "best_score.txt";
+    private static final String BEST_SCORES_FILE = "best_scores.txt";
     private int dots;
     private int apple_x;
     private int apple_y;
@@ -24,6 +26,12 @@ public class SnakeModel {
     private boolean downDirection = false;
     private boolean inGame = true;
     private boolean paused = false;
+    private Level currentLevel = Level.NORMAL; // Mức độ khó mặc định
+
+    // Enum đại diện cho các mức độ khó
+    public enum Level {
+        NORMAL, HARD, VERY_HARD
+    }
 
     public SnakeModel() {
         initGame();
@@ -37,6 +45,7 @@ public class SnakeModel {
         }
         locateApple();
         paused = false;
+        point = 0;
     }
 
     public void locateApple() {
@@ -86,30 +95,50 @@ public class SnakeModel {
         }
     }
 
-    public int readBestScoreFromFile() {
+    public Map<Level, Integer> readBestScoresFromFile() {
+        Map<Level, Integer> bestScores = new HashMap<>();
+        bestScores.put(Level.NORMAL, 0);
+        bestScores.put(Level.HARD, 0);
+        bestScores.put(Level.VERY_HARD, 0);
         try {
-            File file = new File(BEST_SCORE_FILE);
+            File file = new File(BEST_SCORES_FILE);
             if (!file.exists()) {
-                return 0;
+                return bestScores;
             }
             BufferedReader reader = new BufferedReader(new FileReader(file));
-            int bestScore = Integer.parseInt(reader.readLine());
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(":");
+                if (parts.length == 2) {
+                    Level level = Level.valueOf(parts[0]);
+                    int score = Integer.parseInt(parts[1]);
+                    bestScores.put(level, score);
+                }
+            }
             reader.close();
-            return bestScore;
         } catch (Exception e) {
             e.printStackTrace();
-            return 0;
         }
+        return bestScores;
     }
 
-    public void writeBestScoreToFile(int score) {
+    public void writeBestScoreToFile(Level level, int score) {
+        Map<Level, Integer> bestScores = readBestScoresFromFile();
+        bestScores.put(level, Math.max(bestScores.get(level), score));
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(BEST_SCORE_FILE));
-            writer.write(String.valueOf(score));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(BEST_SCORES_FILE));
+            for (Map.Entry<Level, Integer> entry : bestScores.entrySet()) {
+                writer.write(entry.getKey() + ":" + entry.getValue());
+                writer.newLine();
+            }
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public int getBestScoreForLevel(Level level) {
+        return readBestScoresFromFile().get(level);
     }
 
     public void newGame() {
@@ -136,10 +165,12 @@ public class SnakeModel {
     public boolean isUpDirection() { return upDirection; }
     public boolean isDownDirection() { return downDirection; }
     public boolean isPaused() { return paused; }
+    public Level getCurrentLevel() { return currentLevel; }
 
     public void setLeftDirection(boolean left) { leftDirection = left; }
     public void setRightDirection(boolean right) { rightDirection = right; }
     public void setUpDirection(boolean up) { upDirection = up; }
     public void setDownDirection(boolean down) { downDirection = down; }
     public void setPaused(boolean paused) { this.paused = paused; }
+    public void setCurrentLevel(Level level) { this.currentLevel = level; }
 }
