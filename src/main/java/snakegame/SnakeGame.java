@@ -11,8 +11,6 @@ public class SnakeGame extends JFrame {
         SnakeModel model = new SnakeModel();
         SnakeView view = new SnakeView(model);
         SnakeController controller = new SnakeController(model, view);
-
-        // Không cần KeyAdapter vì TAdapter trong SnakeController đã xử lý
         view.setFocusable(true);
         view.requestFocusInWindow();
 
@@ -21,6 +19,9 @@ public class SnakeGame extends JFrame {
         setTitle("Snake Game");
         pack();
         setLocationRelativeTo(null);
+        setResizable(false);
+        ImageIcon img = new ImageIcon(getClass().getResource("/snakegame/icon/logo.png"));
+        setIconImage(img.getImage());
         setVisible(true);
     }
 

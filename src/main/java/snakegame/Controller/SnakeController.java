@@ -9,7 +9,6 @@ public class SnakeController implements ActionListener {
     private SnakeModel model;
     private SnakeView view;
     private Timer timer;
-    private boolean processingPause = false;
 
     public SnakeController(SnakeModel model, SnakeView view) {
         this.model = model;
@@ -52,7 +51,7 @@ public class SnakeController implements ActionListener {
     }
 
     public void handlePlay() {
-        model.newGame();
+//        model.newGame();
         view.hideMenu();
         timer.start();
         view.revalidate();
@@ -137,82 +136,52 @@ public class SnakeController implements ActionListener {
     private class TAdapter extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
-            try {
-                int key = e.getKeyCode();
-                if (model == null || timer == null) {
-                    System.err.println("Error: model or timer is null in TAdapter");
-                    return;
-                }
-                if (model.isInGame()) {
-                    if (key == KeyEvent.VK_ENTER || key == KeyEvent.VK_ESCAPE) {
-                        if (!processingPause) {
-                            processingPause = true;
-                            if (model.isPaused()) {
-                                model.setPaused(false);
-                                if (!timer.isRunning()) {
-                                    timer.start();
-                                }
-                            } else {
-                                model.setPaused(true);
-                                if (timer.isRunning()) {
-                                    timer.stop();
-                                }
-                            }
+            int key = e.getKeyCode();
+            if (model == null || timer == null) {
+                System.err.println("Error model or timer is null");
+                return;
+            }
+            if (model.isInGame()) {
+                if (key == KeyEvent.VK_ENTER || key == KeyEvent.VK_ESCAPE) {
+                    model.setPaused(!model.isPaused());
+                    if (model.isPaused()) timer.stop(); else timer.start();
+                    view.repaint();
+                } else {
+                    boolean directionChanged = false;
+                    if ((key == KeyEvent.VK_LEFT || key == KeyEvent.VK_A) && !model.isRightDirection()) {
+                        model.setLeftDirection(true);
+                        model.setDownDirection(false);
+                        model.setUpDirection(false);
+                        directionChanged = true;
+                    }
+                    if ((key == KeyEvent.VK_RIGHT || key == KeyEvent.VK_D) && !model.isLeftDirection()) {
+                        model.setRightDirection(true);
+                        model.setDownDirection(false);
+                        model.setUpDirection(false);
+                        directionChanged = true;
+                    }
+                    if ((key == KeyEvent.VK_UP || key == KeyEvent.VK_W) && !model.isDownDirection()) {
+                        model.setUpDirection(true);
+                        model.setLeftDirection(false);
+                        model.setRightDirection(false);
+                        directionChanged = true;
+                    }
+                    if ((key == KeyEvent.VK_DOWN || key == KeyEvent.VK_S) && !model.isUpDirection()) {
+                        model.setDownDirection(true);
+                        model.setLeftDirection(false);
+                        model.setRightDirection(false);
+                        directionChanged = true;
+                    }
+                    if (directionChanged) {
+                        if (model.isPaused()) {
+                            model.setPaused(!model.isPaused());
+                            timer.start();
                             view.repaint();
-                            new Timer(200, evt -> {
-                                processingPause = false;
-                                ((Timer) evt.getSource()).stop();
-                            }).start();
-                        }
-                    } else {
-                        boolean directionChanged = false;
-                        if ((key == KeyEvent.VK_LEFT || key == KeyEvent.VK_A) && !model.isRightDirection()) {
-                            model.setLeftDirection(true);
-                            model.setDownDirection(false);
-                            model.setUpDirection(false);
-                            directionChanged = true;
-                        }
-                        if ((key == KeyEvent.VK_RIGHT || key == KeyEvent.VK_D) && !model.isLeftDirection()) {
-                            model.setRightDirection(true);
-                            model.setDownDirection(false);
-                            model.setUpDirection(false);
-                            directionChanged = true;
-                        }
-                        if ((key == KeyEvent.VK_UP || key == KeyEvent.VK_W) && !model.isDownDirection()) {
-                            model.setUpDirection(true);
-                            model.setLeftDirection(false);
-                            model.setRightDirection(false);
-                            directionChanged = true;
-                        }
-                        if ((key == KeyEvent.VK_DOWN || key == KeyEvent.VK_S) && !model.isUpDirection()) {
-                            model.setDownDirection(true);
-                            model.setLeftDirection(false);
-                            model.setRightDirection(false);
-                            directionChanged = true;
-                        }
-                        if (directionChanged) {
-                            if (model.isPaused()) {
-                                if (!processingPause) {
-                                    processingPause = true;
-                                    model.setPaused(false);
-                                    if (!timer.isRunning()) {
-                                        timer.start();
-                                    }
-                                    view.repaint();
-                                    new Timer(200, evt -> {
-                                        processingPause = false;
-                                        ((Timer) evt.getSource()).stop();
-                                    }).start();
-                                }
-                            } else if (!timer.isRunning()) {
-                                timer.start();
-                            }
+                        } else if (!timer.isRunning()) {
+                            timer.start();
                         }
                     }
                 }
-            } catch (Exception ex) {
-                System.err.println("Error in TAdapter.keyPressed: " + ex.getMessage());
-                ex.printStackTrace();
             }
         }
     }

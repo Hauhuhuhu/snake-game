@@ -118,7 +118,7 @@ public class SnakeView extends JPanel {
             menuOver.setPreferredSize(new Dimension(250, 220));
             menuOver.setLayout(new BorderLayout());
 
-            JLabel lb = new JLabel("THUA", SwingConstants.CENTER);
+            JLabel lb = new JLabel("KẾT QUẢ", SwingConstants.CENTER);
             lb.setFont(new Font("Arial", Font.BOLD, 18));
             lb.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             menuOver.add(lb, BorderLayout.NORTH);
@@ -130,7 +130,7 @@ public class SnakeView extends JPanel {
             level = new JLabel("", SwingConstants.CENTER); // Khởi tạo nhãn mức độ
             level.setFont(new Font("Arial", Font.BOLD, 16));
             level.setForeground(Color.BLUE);
-            JLabel resultLabel = new JLabel("Kết quả:", SwingConstants.CENTER);
+            JLabel resultLabel = new JLabel("Điểm:", SwingConstants.CENTER);
             resultLabel.setFont(new Font("Arial", Font.BOLD, 16));
             result = new JLabel();
             result.setHorizontalAlignment(SwingConstants.CENTER);
@@ -161,7 +161,7 @@ public class SnakeView extends JPanel {
             menuOver.add(buttonPanel, BorderLayout.SOUTH);
             add(menuOver);
         }
-        // Cập nhật nhãn mức độ mỗi lần gọi
+
         String levelText = model.getCurrentLevel() != null ? model.getCurrentLevel().toString() : "UNKNOWN";
         if(levelText == "NORMAL") levelText = "Bình Thường";
         if(levelText == "HARD") levelText = "Khó";
@@ -194,7 +194,7 @@ public class SnakeView extends JPanel {
         Toolkit.getDefaultToolkit().sync();
     }
 
-    // Methods to control visibility
+
     public void showMenu() {
         menu.setVisible(true);
         if (menuLevel != null) menuLevel.setVisible(false);
@@ -221,7 +221,7 @@ public class SnakeView extends JPanel {
         if (menuOver != null) menuOver.setVisible(false);
     }
 
-    // Getters để controller gắn sự kiện
+
     public JButton getPlayButton() { return playButton; }
     public JButton getLevelButton() { return levelButton; }
     public JButton getNormalLevelButton() { return normalLevelButton; }

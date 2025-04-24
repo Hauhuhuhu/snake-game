@@ -26,9 +26,9 @@ public class SnakeModel {
     private boolean downDirection = false;
     private boolean inGame = true;
     private boolean paused = false;
-    private Level currentLevel = Level.NORMAL; // Mức độ khó mặc định
+    private Level currentLevel = Level.NORMAL;
 
-    // Enum đại diện cho các mức độ khó
+
     public enum Level {
         NORMAL, HARD, VERY_HARD
     }
@@ -152,7 +152,7 @@ public class SnakeModel {
         initGame();
     }
 
-    // Getters and setters
+
     public int getDots() { return dots; }
     public int getAppleX() { return apple_x; }
     public int getAppleY() { return apple_y; }
