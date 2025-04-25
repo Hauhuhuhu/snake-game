@@ -13,11 +13,27 @@ public class SnakeController implements ActionListener {
     public SnakeController(SnakeModel model, SnakeView view) {
         this.model = model;
         this.view = view;
-        this.timer = new Timer(400, this);
+        updatePlayButtonText();
+        if(model.hasSavedGameState()) {
+            model.setPaused(!model.isPaused());
+        }
+        this.timer = new Timer(getDelayForLevel(model.getCurrentLevel()), this);
         setupButtonListeners();
         view.addKeyListener(new TAdapter());
         view.requestFocusInWindow();
-        timer.start();
+    }
+
+    private int getDelayForLevel(SnakeModel.Level level) {
+        switch (level) {
+            case NORMAL:
+                return 400;
+            case HARD:
+                return 100;
+            case VERY_HARD:
+                return 30;
+            default:
+                return 400;
+        }
     }
 
     private void setupButtonListeners() {
@@ -51,8 +67,10 @@ public class SnakeController implements ActionListener {
     }
 
     public void handlePlay() {
-//        model.newGame();
         view.hideMenu();
+        if(model.hasSavedGameState()) {
+            model.setPaused(!model.isPaused());
+        }
         timer.start();
         view.revalidate();
         view.repaint();
@@ -99,6 +117,7 @@ public class SnakeController implements ActionListener {
     public void handleReplay() {
         model.newGame();
         if (timer.isRunning()) timer.stop();
+        timer = new Timer(getDelayForLevel(model.getCurrentLevel()), this);
         timer.start();
         view.hideMenuOver();
         view.revalidate();
@@ -110,8 +129,15 @@ public class SnakeController implements ActionListener {
         model.newGame();
         view.showMenu();
         if (timer.isRunning()) timer.stop();
+        updatePlayButtonText();
         view.revalidate();
         view.repaint();
+    }
+
+    private void updatePlayButtonText() {
+        if (view.getPlayButton() != null) {
+            view.getPlayButton().setText(model.hasSavedGameState() ? "Tiếp tục" : "Chơi");
+        }
     }
 
     @Override
@@ -127,6 +153,8 @@ public class SnakeController implements ActionListener {
                 model.writeBestScoreToFile(model.getCurrentLevel(), model.getPoint());
                 bestScore = model.getPoint();
             }
+            model.clearGameState();
+            updatePlayButtonText();
             view.loadGameOver(model.getPoint(), bestScore);
             setupGameOverButtonListeners();
         }
@@ -144,7 +172,13 @@ public class SnakeController implements ActionListener {
             if (model.isInGame()) {
                 if (key == KeyEvent.VK_ENTER || key == KeyEvent.VK_ESCAPE) {
                     model.setPaused(!model.isPaused());
-                    if (model.isPaused()) timer.stop(); else timer.start();
+                    if (model.isPaused()) {
+                        timer.stop();
+                        model.saveGameState();
+                        updatePlayButtonText();
+                    } else {
+                        timer.start();
+                    }
                     view.repaint();
                 } else {
                     boolean directionChanged = false;

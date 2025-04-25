@@ -1,16 +1,12 @@
 package snakegame.Model;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
 public class SnakeModel {
     private static final String BEST_SCORES_FILE = "best_scores.txt";
+    private static final String GAME_STATE_FILE = "game_state.txt";
     private int dots;
     private int apple_x;
     private int apple_y;
@@ -28,13 +24,16 @@ public class SnakeModel {
     private boolean paused = false;
     private Level currentLevel = Level.NORMAL;
 
-
     public enum Level {
         NORMAL, HARD, VERY_HARD
     }
 
     public SnakeModel() {
-        initGame();
+        if (hasSavedGameState()) {
+            loadGameState();
+        } else {
+            initGame();
+        }
     }
 
     public void initGame() {
@@ -46,6 +45,103 @@ public class SnakeModel {
         locateApple();
         paused = false;
         point = 0;
+    }
+
+    public boolean hasSavedGameState() {
+        File file = new File(GAME_STATE_FILE);
+        return file.exists() && file.length() > 0;
+    }
+
+
+    public void saveGameState() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(GAME_STATE_FILE))) {
+            writer.write("dots:" + dots);
+            writer.newLine();
+            writer.write("apple_x:" + apple_x);
+            writer.newLine();
+            writer.write("apple_y:" + apple_y);
+            writer.newLine();
+            writer.write("point:" + point);
+            writer.newLine();
+            writer.write("leftDirection:" + leftDirection);
+            writer.newLine();
+            writer.write("rightDirection:" + rightDirection);
+            writer.newLine();
+            writer.write("upDirection:" + upDirection);
+            writer.newLine();
+            writer.write("downDirection:" + downDirection);
+            writer.newLine();
+            writer.write("currentLevel:" + currentLevel);
+            writer.newLine();
+            writer.write("snake_dots:");
+            for (int i = 0; i < dots; i++) {
+                writer.write(x[i] + "," + y[i]);
+                if (i < dots - 1) writer.write(";");
+            }
+            writer.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loadGameState() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(GAME_STATE_FILE))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(":");
+                if (parts.length < 2) continue;
+                switch (parts[0]) {
+                    case "dots":
+                        dots = Integer.parseInt(parts[1]);
+                        break;
+                    case "apple_x":
+                        apple_x = Integer.parseInt(parts[1]);
+                        break;
+                    case "apple_y":
+                        apple_y = Integer.parseInt(parts[1]);
+                        break;
+                    case "point":
+                        point = Integer.parseInt(parts[1]);
+                        break;
+                    case "leftDirection":
+                        leftDirection = Boolean.parseBoolean(parts[1]);
+                        break;
+                    case "rightDirection":
+                        rightDirection = Boolean.parseBoolean(parts[1]);
+                        break;
+                    case "upDirection":
+                        upDirection = Boolean.parseBoolean(parts[1]);
+                        break;
+                    case "downDirection":
+                        downDirection = Boolean.parseBoolean(parts[1]);
+                        break;
+                    case "currentLevel":
+                        currentLevel = Level.valueOf(parts[1]);
+                        break;
+                    case "snake_dots":
+                        String[] snakeDots = parts[1].split(";");
+                        for (int i = 0; i < snakeDots.length; i++) {
+                            String[] xy = snakeDots[i].split(",");
+                            x[i] = Integer.parseInt(xy[0]);
+                            y[i] = Integer.parseInt(xy[1]);
+                        }
+                        break;
+                }
+            }
+            inGame = true;
+            paused = true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            initGame();
+        }
+    }
+
+    public void clearGameState() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(GAME_STATE_FILE))) {
+            writer.write("");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void locateApple() {
@@ -149,9 +245,9 @@ public class SnakeModel {
         downDirection = false;
         point = 0;
         paused = false;
+        clearGameState();
         initGame();
     }
-
 
     public int getDots() { return dots; }
     public int getAppleX() { return apple_x; }
